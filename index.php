@@ -112,10 +112,11 @@ error_reporting(E_ALL);
 
             $accoutnName = trim($rowData[0]);
 
-            // echo "<pre>";
-            // var_dump(intval($rowData[1]));
-            // echo "</pre>";
-            // die;
+            echo "<pre>";
+            var_dump(($rowData[1]));
+            var_dump(intval($rowData[1]));
+            echo "</pre>";
+            die;
 
             if (count($rowData) > 1 && $accoutnName != '') {
               echo "<tr>";
