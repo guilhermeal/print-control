@@ -68,134 +68,148 @@ error_reporting(E_ALL);
 
         $dateExport = parseDate($fileDate);
 
-        echo "<h2 class='mt-4'>Informações da Impressora</h2>";
-        echo "<div class='row'>";
-        echo "<div class='col-md-4'><p class='mb-0'><strong>Nome da Impressora:</strong> $printerName</p></div>";
-        echo "<div class='col-md-4'><p class='mb-0'><strong>Número de Série:</strong> $serialNumber</p></div>";
-        echo "<div class='col-md-4'><p class='mb-0'><strong>Data da Geração do Arquivo:</strong> " . parseDate($fileDate, 'normal') . "</p></div>";
-        echo "</div>";
-
-        echo "<h2 class='mt-4'>Dados Coletados</h2>";
-        echo '<table class="table table-striped table-bordered table-responsive mt-2 w-100">';
-        echo "<thead style='backgroud-color: gray;'><tr>";
-
-        foreach ($tableHeaders as $header) {
-          echo "<th>$header</th>";
-        }
-        echo "</tr>";
-
-        echo "<tr>";
-        foreach ($tableHeaders2 as $header2) {
-          echo "<th>$header2</th>";
-        }
-        echo "</tr>";
-
-        echo "<tr>";
-        foreach ($tableHeaders3 as $header3) {
-          echo "<th>$header3</th>";
-        }
-        echo "</tr></thead><tbody>";
-
-        for ($i = 7; $i < count($lines); $i++) {
-          $rowData = explode("\t", $lines[$i]);
-
-          $accoutnNameTrim = trim($rowData[0]);
-          $accoutnNameTrimJson = (explode("\t", $accoutnNameTrim)[0]);
-          $accoutnName = urldecode($accoutnNameTrimJson);
-
-          if (count($rowData) > 1 && $accoutnName != '' && strcmp($accoutnName, 'Public') && strcmp($accoutnName, 'BoxAdmin')) {
-            echo "<tr>";
-            echo "<td>{$accoutnName}</td>";
-            "<td>{$accoutnName}</td>";
-
-            $copy_bw = 0;
-            $copy_color = 0;
-            $print_bw = 0;
-            $print_color = 0;
-
-
-            for ($j = 1; $j < count($rowData); $j++) {
-
-              $valueRow = $rowData[$j];
-              $valor = (int)$valueRow;
-
-              echo "<td>" . $valor . "</td>";
-
-              switch ($j) {
-                case 6: {
-                    $copy_color += $valor;
-                    break;
-                  }
-                case 7: {
-                    $copy_bw += $valor;
-                    break;
-                  }
-                case 8: {
-                    $copy_color += $valor;
-                    break;
-                  }
-                case 9: {
-                    $copy_bw += $valor;
-                    break;
-                  }
-                case 11: {
-                    $copy_color += ($largePagePay2 ? $valor * 2 : $valor);
-                    break;
-                  }
-                case 12: {
-                    $copy_bw += ($largePagePay2 ? $valor * 2 : $valor);
-                    break;
-                  }
-                case 13: {
-                    $copy_color += ($largePagePay2 ? $valor * 2 : $valor);
-                    break;
-                  }
-                case 14: {
-                    $copy_bw += ($largePagePay2 ? $valor * 2 : $valor);
-                    break;
-                  }
-                case 16: {
-                    $print_color += $valor;
-                    break;
-                  }
-                case 17: {
-                    $print_bw += $valor;
-                    break;
-                  }
-                case 18: {
-                    $print_color += $valor;
-                    break;
-                  }
-                case 20: {
-                    $print_color += ($largePagePay2 ? $valor * 2 : $valor);
-                    break;
-                  }
-                case 21: {
-                    $print_bw += ($largePagePay2 ? $valor * 2 : $valor);
-                    break;
-                  }
-                case 22: {
-                    $print_color += ($largePagePay2 ? $valor * 2 : $valor);
-                    break;
-                  }
-              }
-            }
-
-            echo "</tr>";
-
-            $queryPrint = "<br/>" . "('{$rowData[0]}','{$printerName}','{$dateExport}',{$copy_bw},{$copy_color},{$print_bw},{$print_color},'N')";
-            $queryPrint .= ($i < count($lines) - 2 ? ',' : ';');
-            $queryInsert .= $queryPrint;
-          }
-        }
-
-
-        echo "</tbody></table>";
-      } else {
-        echo "Falha ao ler o arquivo.";
-      }
-    }
     ?>
+
+        <h2 class='mt-4'>Informações da Impressora</h2>
+        <div class='row'>
+          <div class='col-md-4'>
+            <p class='mb-0'><strong>Nome da Impressora:</strong><?= $printerName; ?></p>
+          </div>
+          <div class='col-md-4'>
+            <p class='mb-0'><strong>Número de Série:</strong><?= $serialNumber; ?></p>
+          </div>
+          <div class='col-md-4'>
+            <p class='mb-0'><strong>Data da Geração do Arquivo:</strong><?= parseDate($fileDate, 'normal'); ?></p>
+          </div>
+        </div>
+
+        <h2 class='mt-4'>Dados Coletados</h2>
+        <table class="table table-striped table-bordered table-responsive mt-2 w-100">
+          <thead style='backgroud-color: gray;'>
+            <tr>
+
+          <?
+
+          foreach ($tableHeaders as $header) {
+            echo "<th>$header</th>";
+          }
+          echo "</tr>";
+
+          echo "<tr>";
+          foreach ($tableHeaders2 as $header2) {
+            echo "<th>$header2</th>";
+          }
+          echo "</tr>";
+
+          echo "<tr>";
+          foreach ($tableHeaders3 as $header3) {
+            echo "<th>$header3</th>";
+          }
+          echo "</tr></thead><tbody>";
+
+          for ($i = 7; $i < count($lines); $i++) {
+            $rowData = explode("\t", $lines[$i]);
+
+            $accoutnName = trim($rowData[0]);
+
+            // echo "<pre>";
+            // var_dump(intval($rowData[1]));
+            // echo "</pre>";
+            // die;
+
+            if (count($rowData) > 1 && $accoutnName != '') {
+              echo "<tr>";
+              echo "<td>{$accoutnName}</td>";
+              "<td>{$accoutnName}</td>";
+
+              $copy_bw = 0;
+              $copy_color = 0;
+              $print_bw = 0;
+              $print_color = 0;
+
+
+              for ($j = 1; $j < count($rowData); $j++) {
+
+                $valueRow = $rowData[$j];
+                $valor = (int)$valueRow;
+
+                echo "<td>" . $valor . "</td>";
+
+                switch ($j) {
+                  case 6: {
+                      $copy_color += $valor;
+                      break;
+                    }
+                  case 7: {
+                      $copy_bw += $valor;
+                      break;
+                    }
+                  case 8: {
+                      $copy_color += $valor;
+                      break;
+                    }
+                  case 9: {
+                      $copy_bw += $valor;
+                      break;
+                    }
+                  case 11: {
+                      $copy_color += ($largePagePay2 ? $valor * 2 : $valor);
+                      break;
+                    }
+                  case 12: {
+                      $copy_bw += ($largePagePay2 ? $valor * 2 : $valor);
+                      break;
+                    }
+                  case 13: {
+                      $copy_color += ($largePagePay2 ? $valor * 2 : $valor);
+                      break;
+                    }
+                  case 14: {
+                      $copy_bw += ($largePagePay2 ? $valor * 2 : $valor);
+                      break;
+                    }
+                  case 16: {
+                      $print_color += $valor;
+                      break;
+                    }
+                  case 17: {
+                      $print_bw += $valor;
+                      break;
+                    }
+                  case 18: {
+                      $print_color += $valor;
+                      break;
+                    }
+                  case 20: {
+                      $print_color += ($largePagePay2 ? $valor * 2 : $valor);
+                      break;
+                    }
+                  case 21: {
+                      $print_bw += ($largePagePay2 ? $valor * 2 : $valor);
+                      break;
+                    }
+                  case 22: {
+                      $print_color += ($largePagePay2 ? $valor * 2 : $valor);
+                      break;
+                    }
+                }
+              }
+
+              echo "</tr>";
+
+              $queryPrint = "<br/>" . "('{$rowData[0]}','{$printerName}','{$dateExport}',{$copy_bw},{$copy_color},{$print_bw},{$print_color},'N')";
+              $queryPrint .= ($i < count($lines) - 2 ? ',' : ';');
+              $queryInsert .= $queryPrint;
+            }
+          }
+
+
+          echo "</tbody></table>";
+        } else {
+          echo "Falha ao ler o arquivo.";
+        }
+      }
+          ?>
   </div>
 
   <br />
