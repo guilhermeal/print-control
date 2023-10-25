@@ -116,7 +116,7 @@ error_reporting(E_ALL);
             // var_dump(($rowData[1]));
             // var_dump(intval($rowData[1]));
             // echo "</pre>";
-            die;
+            // die;
 
             if (count($rowData) > 1 && $accoutnName != '') {
               echo "<tr>";
