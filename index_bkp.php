@@ -117,14 +117,14 @@ function connectDB()
           <?
           $link = connectDB();
 
-          if ($result = mysqli_query($link, "SELECT DISTINCT printer, date_export FROM printdata;")) {
+          if ($result = mysqli_query($link, "SELECT DISTINCT date_export AS DATES FROM `printdata`;")) {
             $qtdRows = mysqli_num_rows($result);
             if ($qtdRows > 0) {
               $options_reports = array();
               while ($row = mysqli_fetch_row($result)) {
-                $option_key = $row[0] . ":::" . $row[1];
-                $option_value = $row[0] . " - " . parseDate($row[1], 'normal', 'db');
-                $options_reports[$option_key] = $option_value;
+                $option = $row[0];
+                $option_value = parseDate($row[0], 'normal', 'db');
+                array_push($options_reports, $row[0]);
               }
 
           ?>
@@ -136,7 +136,7 @@ function connectDB()
                     <?
                     foreach (array_keys($options_reports) as $option) {
                     ?>
-                      <option value="<?= $option; ?>" <?= (@$_POST['report_from'] == $option ? "selected" : ""); ?>><?= $options_reports[$option]; ?></option>
+                      <option value="<?= $options_reports[$option]; ?>" <?= (@$_POST['report_from'] == $options_reports[$option] ? "selected" : ""); ?>><?= parseDate($options_reports[$option], 'normal', 'db'); ?></option>
                     <?
                     }
                     ?>
@@ -147,7 +147,7 @@ function connectDB()
                     <?
                     foreach (array_keys($options_reports) as $option) {
                     ?>
-                      <option value="<?= $option; ?>" <?= (@$_POST['report_to'] == $option ? "selected" : ""); ?>><?= $options_reports[$option]; ?></option>
+                      <option value="<?= $options_reports[$option]; ?>" <?= (@$_POST['report_to'] == $options_reports[$option] ? "selected" : ""); ?>><?= parseDate($options_reports[$option], 'normal', 'db'); ?></option>
                     <?
                     }
                     ?>
@@ -179,22 +179,22 @@ function connectDB()
             case 'generate': {
 
                 $link = connectDB();
-                $post_from = explode(':::', $_POST['report_from']);
-                $post_to = explode(':::', $_POST['report_to']);
+                $post_from = ($_POST['report_from']);
+                $post_to = ($_POST['report_to']);
                 $showzero = @$_POST['showzero'] == 'on' ? true : false;
-
-                $maxValues = array();
 
                 $queryReport = "SELECT
                   `user`,
-                  (`copy_bw` - (SELECT `copy_bw` FROM `printdata` WHERE `user` = p1.user AND `status` = 'N' AND `printer` = '" . ($post_from[0]) . "' AND `date_export` = '" . ($post_from[1]) . "')) AS `copy_bw_diff`,
-                  (`copy_color` - (SELECT `copy_color` FROM `printdata` WHERE `user` = p1.user AND `status` = 'N' AND `printer` = '" . ($post_from[0]) . "' AND `date_export` = '" . ($post_from[1]) . "')) AS `copy_color_diff`,
-                  (`print_bw` - (SELECT `print_bw` FROM `printdata` WHERE `user` = p1.user AND `status` = 'N' AND `printer` = '" . ($post_from[0]) . "' AND `date_export` = '" . ($post_from[1]) . "')) AS `print_bw_diff`,
-                  (`print_color` - (SELECT `print_color` FROM `printdata` WHERE `user` = p1.user AND `status` = 'N' AND `printer` = '" . ($post_from[0]) . "' AND `date_export` = '" . ($post_from[1]) . "')) AS `print_color_diff`
+                  (`copy_bw` - (SELECT `copy_bw` FROM `printdata` WHERE `user` = p1.user AND `status` = 'N' AND `date_export` = '" . ($post_from) . "')) AS `copy_bw_diff`,
+                  (`copy_color` - (SELECT `copy_color` FROM `printdata` WHERE `user` = p1.user AND `status` = 'N' AND `date_export` = '" . ($post_from) . "')) AS `copy_color_diff`,
+                  (`print_bw` - (SELECT `print_bw` FROM `printdata` WHERE `user` = p1.user AND `status` = 'N' AND `date_export` = '" . ($post_from) . "')) AS `print_bw_diff`,
+                  (`print_color` - (SELECT `print_color` FROM `printdata` WHERE `user` = p1.user AND `status` = 'N' AND `date_export` = '" . ($post_from) . "')) AS `print_color_diff`
               FROM printdata p1
-              WHERE `status` = 'N' AND `printer` = '" . ($post_to[0]) . "' AND `date_export` = '" . ($post_to[1]) . "'
+              WHERE `status` = 'N' AND `date_export` = '" . ($post_to) . "'
               ORDER BY `user` ASC
               ;";
+
+              echo $queryReport ;
 
                 if ($result = mysqli_query($link, $queryReport)) {
                   $qtdRows = mysqli_num_rows($result);
@@ -207,7 +207,7 @@ function connectDB()
                       <canvas id="myChart"></canvas>
                     </div>
 
-                    <table class="table table-striped table-hover mt-2">
+                    <table class="table table-striped mt-5">
                       <thead>
                         <tr>
                           <th>Usuário</th>
@@ -227,6 +227,8 @@ function connectDB()
                         $total_print_bw = 0;
                         $total_print_color = 0;
 
+
+
                         while ($rows = mysqli_fetch_row($result)) {
                           $total_line_bw = 0;
                           $total_line_color = 0;
@@ -242,37 +244,21 @@ function connectDB()
                               case 1: {
                                   $total_line_bw += $cell;
                                   $total_copy_bw += $cell;
-
-                                  if($cell > @$maxValues[$i]) {
-                                    $maxValues[$i] = $cell;
-                                  }
                                   break;
                                 }
                               case 2: {
                                   $total_line_color += $cell;
                                   $total_copy_color += $cell;
-
-                                  if($cell > @$maxValues[$i]) {
-                                    $maxValues[$i] = $cell;
-                                  }
                                   break;
                                 }
                               case 3: {
                                   $total_line_bw += $cell;
                                   $total_print_bw += $cell;
-
-                                  if($cell > @$maxValues[$i]) {
-                                    $maxValues[$i] = $cell;
-                                  }
                                   break;
                                 }
                               case 4: {
                                   $total_line_color += $cell;
                                   $total_print_color += $cell;
-
-                                  if($cell > @$maxValues[$i]) {
-                                    $maxValues[$i] = $cell;
-                                  }
                                   break;
                                 }
                             }
@@ -284,13 +270,6 @@ function connectDB()
                             $i++;
                           }
 
-                          if($total_line_bw > @$maxValues['tpb']) {
-                            $maxValues['tpb'] = $total_line_bw;
-                          }
-                          if($total_line_color > @$maxValues['tco']) {
-                            $maxValues['tco'] = $total_line_color;
-                          }
-                          
                           $printRow .= "<td class='text-center'>" . $total_line_bw . "</td>";
                           $printRow .= "<td class='text-center'>" . $total_line_color . "</td>";
                           if ($showzero || ($total_line_bw + $total_line_color > 0)) {
@@ -318,10 +297,6 @@ function connectDB()
                         </tr>
                       </tfoot>
                     </table>
-                    <br />
-                    <div class='dateReport'>
-                      Relatório emitido em: <?=date('d/m/Y H:i');?>
-                    </div>
 
                     <?
                     $lista = "";
@@ -342,15 +317,13 @@ function connectDB()
                         data: [" . rtrim($data1, ',') . "],
                         backgroundColor: '#999',
                         order: 1
+                      }, {
+                        type: 'bar',
+                        label: 'Total Cor',
+                        data: [" . rtrim($data2, ',') . "],
+                        backgroundColor: '#FF6384',
+                        order: 2
                       }";
-
-                    $data .= (($total_copy_color + $total_print_color) > 0) ? ", {
-                      type: 'bar',
-                      label: 'Total Cor',
-                      data: [" . rtrim($data2, ',') . "],
-                      backgroundColor: '#FF6384',
-                      order: 2
-                    }" : "";
 
 
                     ?>
@@ -380,15 +353,14 @@ function connectDB()
 
                       window.addEventListener('beforeprint', () => {
                         console.log('### BEFORE PRINT ##');
-                        ctx.style.width = "400px";
+                        ctx.style.width = "450px";
                         ctx.style.height = "300px";
                         ctx.resize();
                       });
                       window.addEventListener('afterprint', () => {
                         console.log('### AFTER PRINT ##');
                         ctx.style.width = "100%";
-                        ctx.style.height = "auto";
-                        ctx.style.maxHeight = "380px;";
+                        ctx.style.height = "550px";
                         ctx.resize();
                       });
                     </script>
@@ -1003,8 +975,6 @@ function connectDB()
     }
     ?>
   </div>
-  <footer><strong>#PrintControl</strong> 🚀 Desenvolvido por Guilherme Almeida</footer>
-
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
 </body>
